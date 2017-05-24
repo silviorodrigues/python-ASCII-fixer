@@ -1,19 +1,27 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import sys
+reload(sys)
+sys.setdefaultencoding("utf-8")
 
 import json
 import cchardet as chardet
+import io
 
 with open('countriesToCities.json') as data_file:    
-    data = json.load(data_file)
+  data = json.load(data_file)
 
-counter = 0
+wrong = ['â‚¬','Ã€','â€š','Ã‚','Æ’','Ãƒ','â€ž','Ã„','â€¦','Ã…','â€','Ã†','â€¡','Ã‡','Ë†','Ãˆ','â€°','Ã‰','ÃŠ','â€¹','Ã‹','Å’','ÃŒ','Å½','ÃŽ','â€˜','Ã‘','â€™','Ã’','â€œ','Ã“','â€','Ã”','â€¢','Ã•','â€“','Ã–','â€”','Ã—','Ëœ','Ã˜','â„¢','Ã™','Å¡','Ãš','â€º','Ã›','Å“','Ãœ','Å¾','Ãž','Å¸','ÃŸ','Â¡','Ã¡','Â¢','Ã¢','Â£','Ã£','Â¤','Ã¤','Â¥','Ã¥','Â¦','Ã¦','Â§','Ã§','Â¨','Ã¨','Â©','Ã©','Âª','Ãª','Â«','Ã«','Â¬','Ã¬','Â®','Ã®','Â¯','Ã¯','Â°','Ã°','Â±','Ã±','Â²','Ã²','Â³','Ã³','Â´','Ã´','Âµ','Ãµ','Â¶','Ã¶','Â·','Ã·','Â¸','Ã¸','Â¹','Ã¹','Âº','Ãº','Â»','Ã»','Â¼','Ã¼','Â½','Ã½','Â¾','Ã¾','Â¿','Ã¿']
+correct = ['€', 'À', '‚', 'Â', 'ƒ', 'Ã', '„', 'Ä', '…', 'Å', '†', 'Æ', '‡', 'Ç', 'ˆ', 'È', '‰', 'É', 'Ê', '‹', 'Ë', 'Œ', 'Ì', 'Ž', 'Î', '‘', 'Ñ', '’', 'Ò', '“', 'Ó', '”', 'Ô', '•', 'Õ', '–', 'Ö', '—', '×', '˜', 'Ø', '™', 'Ù', 'š', 'Ú', '›', 'Û', 'œ', 'Ü', 'ž', 'Þ', 'Ÿ', 'ß', '¡', 'á', '¢', 'â', '£', 'ã', '¤', 'ä', '¥', 'å', '¦', 'æ', '§', 'ç', '¨', 'è', '©', 'é', 'ª', 'ê', '«', 'ë', '¬', 'ì', '®', 'î', '¯', 'ï', '°', 'ð', '±', 'ñ', '²', 'ò', '³', 'ó', '´', 'ô', 'µ', 'õ', '¶', 'ö', '·', '÷', '¸', 'ø', '¹', 'ù', 'º', 'ú', '»', 'û', '¼', 'ü', '½', 'ý', '¾', 'þ', '¿', 'ÿ']
 
 for country in data:
-  for city in data[country]:
+  for position, city in enumerate(data[country]):
     charset = chardet.detect(str(city.encode('utf-8')))
     if charset['encoding'] != 'ASCII':
-      print(city)
-      counter += 1
+      errors = [i for i, x in enumerate(wrong) if x in city]
+      for e in errors:
+        data[country][position] = city.replace(wrong[e], correct[e])
 
-print("Temos " + str(counter) + " cidades com falha")
+with io.open('countriesToCities.json', 'w', encoding='utf-8') as f:
+    to_save = json.dumps(data, ensure_ascii=False, encoding='utf-8')
+    f.write(unicode(to_save))
